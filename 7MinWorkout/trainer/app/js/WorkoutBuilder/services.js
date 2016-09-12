@@ -6,65 +6,69 @@ angular.module('app')
   })
 
 angular.module('WorkoutBuilder')
-.factory('WorkoutBuilderService', ['WorkoutService', 'WorkoutPlan', 'Exercise', '$q',
-  function (WorkoutService, WorkoutPlan, Exercise, $q) {
-    var service = {}
-    var buildingWorkout
-    var newWorkout
-    service.startBuilding = function (name) {
-      // If name is defined, editing
-      if (name) {
-        return WorkoutService.getWorkout(name).then(function (workout) {
-          buildingWorkout = workout
-          newWorkout = false
-          return buildingWorkout
+  .factory('WorkoutBuilderService', ['WorkoutService', 'WorkoutPlan', 'Exercise', '$q',
+    function (WorkoutService, WorkoutPlan, Exercise, $q) {
+      var service = {}
+      var buildingWorkout
+      var newWorkout
+      service.startBuilding = function (name) {
+        // If name is defined, editing
+        if (name) {
+          return WorkoutService.getWorkout(name).then(function (workout) {
+            buildingWorkout = workout
+            newWorkout = false
+            return buildingWorkout
+          })
+        } else {
+          buildingWorkout = new WorkoutPlan({})
+          newWorkout = true
+          return $q.when(buildingWorkout)
+        }
+      }
+
+      service.addExercise = function (exercise) {
+        buildingWorkout.exercises.push({
+          details: exercise,
+          duration: 30
         })
-      } else {
-        buildingWorkout = new WorkoutPlan({})
-        newWorkout = true
-        return $q.when(buildingWorkout)
       }
-    }
 
-    service.addExercise = function (exercise) {
-      buildingWorkout.exercises.push({
-        details: exercise,
-        duration: 30
-      })
-    }
-
-    service.canDeleteWorkout = function () {
-      return !newWorkout
-    }
-
-    service.deleteWorkout = function () {
-      if (newWorkout) {
-        return
+      service.canDeleteWorkout = function () {
+        return !newWorkout
       }
-      WorkoutService.deleteWorkout(buildingWorkout.name)
-    }
 
-    service.removeExercise = function (exercise) {
-      buildingWorkout.exercises.splice(buildingWorkout.exercises.indexOf(exercise), 1)
-    }
-
-    service.moveExercise = function (exercise, toIndex) {
-      if (toIndex < 0 || toIndex >= buildingWorkout.exercises) {
-        return
-      } else {
-        var currentIndex = buildingWorkout.exercises.indexOf(exercise)
-        buildingWorkout.exercises.splice(toIndex, 0, buildingWorkout.exercises.splice(currentIndex, 1)[0])
+      service.deleteWorkout = function () {
+        if (newWorkout) {
+          return
+        }
+        WorkoutService.deleteWorkout(buildingWorkout.name)
       }
-    }
 
-    service.save = function () {
-      var workout = newWorkout ? WorkoutService.addWorkout(buildingWorkout) : WorkoutService.updateWorkout(buildingWorkout)
-      newWorkout = false
-      return workout
-    }
+      service.removeExercise = function (exercise) {
+        buildingWorkout.exercises.splice(buildingWorkout.exercises.indexOf(exercise), 1)
+      }
 
-    return service
-  }])
+      service.moveExercise = function (exercise, toIndex) {
+        if (toIndex < 0 || toIndex >= buildingWorkout.exercises) {
+          return
+        } else {
+          var currentIndex = buildingWorkout.exercises.indexOf(exercise)
+          buildingWorkout.exercises.splice(toIndex, 0, buildingWorkout.exercises.splice(currentIndex, 1)[0])
+        }
+      }
+
+      service.save = function () {
+        var promise = newWorkout ?
+          WorkoutService.addWorkout(buildingWorkout) :
+          WorkoutService.updateWorkout(buildingWorkout)
+        promise.then(function (workout) {
+          newWorkout = false
+        })
+        return promise
+      }
+
+      return service
+    }])
 
 angular.module('WorkoutBuilder').factory('ExerciseBuilderService', ['WorkoutService', 'Exercise', '$q',
   function (WorkoutService, Exercise, $q) {

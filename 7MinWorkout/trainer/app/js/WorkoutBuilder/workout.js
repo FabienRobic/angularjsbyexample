@@ -18,7 +18,6 @@ angular.module('WorkoutBuilder')
 
 angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope', 'WorkoutBuilderService', 'selectedWorkout', '$location', '$routeParams',
   function ($scope, WorkoutBuilderService, selectedWorkout, $location, $routeParams) {
-
     $scope.removeExercise = function (exercise) {
       WorkoutBuilderService.removeExercise(exercise)
     }
@@ -46,9 +45,11 @@ angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope'
       if ($scope.formWorkout.$invalid) {
         return
       }
-      $scope.workout = WorkoutBuilderService.save()
-      $scope.formWorkout.$setPristine()
-      $scope.submitted = false
+      WorkoutBuilderService.save().then(function (workout) {
+        $scope.workout = workout
+        $scope.formWorkout.$setPristine()
+        $scope.submitted = false
+      })
     }
 
     $scope.reset = function () {
@@ -62,8 +63,9 @@ angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope'
     }
 
     $scope.deleteWorkout = function () {
-      WorkoutBuilderService.deleteWorkout()
-      $location.path('/builder/workouts')
+      WorkoutBuilderService.deleteWorkout().then(function (response) {
+        $location.path('/builder/workouts')
+      })
     }
 
     $scope.durations = [{ title: '15 seconds', value: 15 },
