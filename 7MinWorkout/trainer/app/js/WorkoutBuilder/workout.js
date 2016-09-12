@@ -63,7 +63,7 @@ angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope'
     }
 
     $scope.deleteWorkout = function () {
-      WorkoutBuilderService.deleteWorkout().then(function (response) {
+      WorkoutBuilderService.delete().then(function (data) {
         $location.path('/builder/workouts')
       })
     }

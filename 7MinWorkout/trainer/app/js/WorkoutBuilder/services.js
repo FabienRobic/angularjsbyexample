@@ -37,11 +37,11 @@ angular.module('WorkoutBuilder')
         return !newWorkout
       }
 
-      service.deleteWorkout = function () {
+      service.delete = function () {
         if (newWorkout) {
           return
         }
-        WorkoutService.deleteWorkout(buildingWorkout.name)
+        return WorkoutService.deleteWorkout(buildingWorkout.name)
       }
 
       service.removeExercise = function (exercise) {
@@ -77,29 +77,32 @@ angular.module('WorkoutBuilder').factory('ExerciseBuilderService', ['WorkoutServ
     var newExercise
 
     service.startBuilding = function (name) {
-      var defer = $q.defer()
       if (name) {
-        WorkoutService.getExercise(name).then(function (exercise) {
-          buildingExercise = exercise
+        buildingExercise = WorkoutService.Exercises.get({ id: name}, function (data) {
           newExercise = false
-          defer.resolve(buildingExercise)
         })
       } else {
         buildingExercise = new Exercise({})
-        defer.resolve(buildingExercise)
         newExercise = true
       }
-      return defer.promise
+      return buildingExercise
     }
 
     service.save = function () {
-      var exercise = newExercise ? WorkoutService.addExercise(buildingExercise) : WorkoutService.updateExercise(exercise)
-      newExercise = false
-      return exercise
+      if (!buildingExercise._id) {
+        buildingExercise._id = buildingExercise.name
+      }
+      var promise = newExercise ?
+        Exercise.save({}, buildingExercise).$promise :
+        buildingExercise.$update({ id: buildingExercise.name })
+      return promise.then(function (data) {
+        newExercise = false
+        return buildingExercise
+      })
     }
 
     service.delete = function () {
-      WorkoutService.deleteExercise(buildingExercise.name)
+      buildingExercise.$delete({ id: buildingExercise.name })
     }
 
     service.canDeleteExercise = function () {

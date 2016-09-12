@@ -19,57 +19,12 @@ angular.module('app')
       collectionsUrl = apiUrl + dbName + '/collections'
     }
 
-    this.$get = ['WorkoutPlan', 'Exercise', '$http', '$q', function (WorkoutPlan, Exercise, $http, $q) {
+    this.$get = ['WorkoutPlan', 'Exercise', '$http', '$q', '$resource', function (WorkoutPlan, Exercise, $http, $q, $resource) {
       var service = {}
       var workouts = []
       var exercises = []
-      service.getExercises = function () {
-        return $http.get(collectionsUrl + '/exercises', {
-          params: {apiKey: apiKey}
-        }).then(function (response) {
-          return response.data.map(function (exercise) {
-            return new Exercise(exercise)
-          })
-        })
-      }
 
-      service.getExercise = function (name) {
-        return $http.get(collectionsUrl + '/exercises/' + name, {
-          params: {apiKey: apiKey}
-        })
-          .then(function (response) {
-            return new Exercise(response.data)
-          })
-      }
-
-      service.addExercise = function (exercise) {
-        if (exercise.name) {
-          exercises.push(exercise)
-          return exercise
-        }
-      }
-
-      service.updateExercise = function (exercise) {
-        for (var i = 0; i < exercises.length; i++) {
-          if (exercises[i].name === exercise.name) {
-            exercises[i] = exercise
-            break
-          }
-        }
-        return exercise
-      }
-
-      service.deleteExercise = function (exerciseName) {
-        var exerciseIndex
-        angular.forEach(exercises, function (ex, index) {
-          if (ex.name === exerciseName) {
-            exerciseIndex = index
-          }
-        })
-        if (exerciseIndex >= 0) {
-          exercises.splice(exerciseIndex, 1)
-        }
-      }
+      service.Exercises = $resource(collectionsUrl + '/exercises/:id', { apiKey: apiKey }, { update: { method: 'PUT' }})
 
       service.getWorkouts = function () {
         return $http.get(collectionsUrl + '/workouts', {
@@ -82,7 +37,7 @@ angular.module('app')
       }
 
       service.getWorkout = function (name) {
-        return $q.all([service.getExercises(), $http.get(collectionsUrl + '/workouts/' + name, {
+        return $q.all([service.Exercises.query().$promise, $http.get(collectionsUrl + '/workouts/' + name, {
           params: {
             apiKey: apiKey
           }
@@ -111,7 +66,7 @@ angular.module('app')
           })
           workoutToSave._id = workoutToSave.name
           return $http.post(collectionsUrl + '/workouts', workoutToSave, {params: {apiKey: apiKey}})
-            .then(function (response) { return response })
+            .then(function (response) { return workout })
         }
       }
 
@@ -128,17 +83,15 @@ angular.module('app')
               })
               workoutToSave._id = workoutToSave.name
               return $http.put(collectionsUrl + '/workouts/' + original.name, workoutToSave, {params: {apiKey: apiKey}})
-                .then(function (response) {
-                  return response
-                })
             }
-          }
-        )
+          })
+          .then(function (response) {
+            return workout
+          })
       }
 
       service.deleteWorkout = function (workoutName) {
         return $http.delete(collectionsUrl + '/workouts/' + workoutName, {params: { apiKey: apiKey }})
-          .then(function (response) { return response })
       }
 
       return service
