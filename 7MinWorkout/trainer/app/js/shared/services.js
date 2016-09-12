@@ -1,5 +1,12 @@
 'use strict'
 
+
+/* Services */
+angular.module('app')
+  .value('appEvents', {
+    workout: { exerciseStarted: 'event:workout:exerciseStarted' }
+  })
+
 angular.module('app')
   .provider('WorkoutService', function () {
     var apiUrl = 'https://api.mongolab.com/api/1/databases/'
@@ -20,33 +27,20 @@ angular.module('app')
       service.getExercises = function () {
         return $http.get(collectionsUrl + '/exercises', {
           params: {apiKey: apiKey}
+        }).then(function (response) {
+          return response.data.map(function (exercise) {
+            return new Exercise(exercise)
+          })
         })
       }
 
-      service.getExercise = function (exerciseName) {
-        var result = null
-        angular.forEach(service.getExercises(), function (exercise) {
-          if (exercise.name === exerciseName) {
-            result = angular.copy(exercise)
-          }
-        })
-        return result
-      }
-
-      service.getWorkouts = function () {
-        return $http.get(collectionsUrl + '/workouts', {
+      service.getExercise = function (name) {
+        return $http.get(collectionsUrl + '/exercises/' + name, {
           params: {apiKey: apiKey}
         })
-      }
-
-      service.getWorkout = function (name) {
-        var result = null
-        angular.forEach(service.getWorkouts(), function (workout) {
-          if (workout.name === name) {
-            result = angular.copy(workout)
-          }
-        })
-        return result
+          .then(function (response) {
+            return new Exercise(response.data)
+          })
       }
 
       service.addExercise = function (exercise) {
@@ -76,6 +70,35 @@ angular.module('app')
         if (exerciseIndex >= 0) {
           exercises.splice(exerciseIndex, 1)
         }
+      }
+
+      service.getWorkouts = function () {
+        return $http.get(collectionsUrl + '/workouts', {
+          params: {apiKey: apiKey}
+        }).then(function (response) {
+          return response.data.map(function (workout) {
+            return new WorkoutPlan(workout)
+          })
+        })
+      }
+
+      service.getWorkout = function (name) {
+        return $q.all([service.getExercises(), $http.get(collectionsUrl + '/workouts/' + name, {
+          params: {
+            apiKey: apiKey
+          }
+        })])
+          .then(function (response) {
+            var allExercises = response[0]
+            var workout = new WorkoutPlan(response[1].data)
+
+            angular.forEach(response[1].data.exercises, function (exercise) {
+              exercise.details = allExercises.filter(function (e) {
+                return e.name === exercise.name
+              })[0]
+            })
+            return workout
+          })
       }
 
       service.addWorkout = function (workout) {

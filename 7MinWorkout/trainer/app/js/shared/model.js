@@ -1,22 +1,25 @@
 'use strict'
 
-angular.module('app').factory('Exercise', function () {
+/* Model classes */
+angular.module('app')
+	.factory('Exercise', function () {
   function Exercise (args) {
     this.name = args.name
     this.title = args.title
     this.description = args.description
     this.image = args.image
     this.related = {}
-    this.related.videos = args.videos || []
+    this.related.videos = (args.related && args.related.videos) ? args.related.videos : []
     this.nameSound = args.nameSound
     this.procedure = args.procedure
   }
   return Exercise
 })
 
-angular.module('app').factory('WorkoutPlan', function () {
+angular.module('app')
+	.factory('WorkoutPlan', function () {
   function WorkoutPlan (args) {
-    this.exercises = []
+    this.exercises = args.exercises || []
     this.name = args.name
     this.title = args.title
     this.description = args.description

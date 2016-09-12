@@ -7,7 +7,7 @@ angular.module('WorkoutBuilder')
         $location.path('/builder/workouts/' + workout.name)
       }
       var init = function () {
-        WorkoutService.getWorkouts().success(function (data) {
+        WorkoutService.getWorkouts().then(function (data) {
           $scope.workouts = data
         })
       }
@@ -18,7 +18,6 @@ angular.module('WorkoutBuilder')
 
 angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope', 'WorkoutBuilderService', 'selectedWorkout', '$location', '$routeParams',
   function ($scope, WorkoutBuilderService, selectedWorkout, $location, $routeParams) {
-    $scope.selected = {}
 
     $scope.removeExercise = function (exercise) {
       WorkoutBuilderService.removeExercise(exercise)
@@ -54,7 +53,7 @@ angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope'
 
     $scope.reset = function () {
       $scope.workout = WorkoutBuilderService.startBuilding($routeParams.id)
-      $scope.formWorkout.$setPristine
+      $scope.formWorkout.$setPristine()
       $scope.submitted = false
     }
 
