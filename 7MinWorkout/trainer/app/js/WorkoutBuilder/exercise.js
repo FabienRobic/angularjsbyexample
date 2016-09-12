@@ -8,7 +8,9 @@ angular.module('WorkoutBuilder')
       }
 
       var init = function () {
-        $scope.exercises = WorkoutService.getExercises()
+        WorkoutService.getExercises().success(function (data) {
+          $scope.exercises = data
+        })
       }
       init()
     }
@@ -22,7 +24,9 @@ angular.module('WorkoutBuilder')
         $location.path('/builder/exercises/' + exercise.name)
       }
       var init = function () {
-        $scope.exercises = WorkoutService.getExercises()
+        WorkoutService.getExercises().success(function (data) {
+          $scope.exercises = data
+        })
       }
       init()
     }
