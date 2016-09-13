@@ -16,8 +16,8 @@ angular.module('WorkoutBuilder')
   ]
 )
 
-angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope', 'WorkoutBuilderService', 'selectedWorkout', '$location', '$routeParams',
-  function ($scope, WorkoutBuilderService, selectedWorkout, $location, $routeParams) {
+angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope', 'WorkoutBuilderService', 'selectedWorkout', '$location', '$routeParams', '$q', 'WorkoutService',
+  function ($scope, WorkoutBuilderService, selectedWorkout, $location, $routeParams, $q, WorkoutService) {
     $scope.removeExercise = function (exercise) {
       WorkoutBuilderService.removeExercise(exercise)
     }
@@ -105,6 +105,26 @@ angular.module('WorkoutBuilder').controller('WorkoutDetailController', ['$scope'
     //       restWatch()
     //     }
     //   })
+
+    // $scope.uniqueUserName = function (value) {
+    //   if (!value || value === $routeParams.id) {
+    //     return $q.when(true)
+    //   }
+    //   return WorkoutService
+    //     .getWorkout(value.toLowerCase())
+    //     .then(function (data) { return $q.reject(); },
+    //       function (error) { return true; })
+    // }
+
+    $scope.uniqueUserName = function (value) {
+      if (!value || value === $routeParams.id) {
+        return $q.when(true)
+      }
+      return WorkoutService
+        .getWorkout(value.toLowerCase())
+        .then(function (data) { return $q.reject() },
+          function (error) { return true })
+    }
 
     var init = function () {
       $scope.workout = selectedWorkout
