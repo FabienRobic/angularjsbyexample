@@ -41,6 +41,7 @@ angular.module('app').config(function ($routeProvider, $sceDelegateProvider, Wor
     leftNav: 'partials/workoutbuilder/left-nav-exercises.html',
     controller: 'WorkoutDetailController',
     topNav: 'partials/workoutbuilder/top-nav.html',
+    routeErrorMessage: 'Could not load the specific workout!',
     resolve: {
       selectedWorkout: ['WorkoutBuilderService', '$route', '$location', function (WorkoutBuilderService, $route, $location) {
         return WorkoutBuilderService.startBuilding($route.current.params.id)
