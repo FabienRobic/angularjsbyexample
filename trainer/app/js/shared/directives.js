@@ -89,17 +89,11 @@ angular.module('app')
   }])
 
 angular.module('app')
-  .directive('busyIndicator', ['$compile', function ($compile) {
+  .directive('busyIndicator', ['$compile', function () {
     return {
       scope: true,
-      compile: function (element, attr) {
-        var busyHtml = '<div><label ng-show="busy" class = "text-info glyphicon glyphicon-refresh spin"></label></div>'
-        element.append(busyHtml)
-      },
-      // link: function (scope, element, attr) {
-      //   var linkfn = $compile('<div><label ng-show="busy" class="text-info glyphicon glyphicon-refresh spin"></label></div>')
-      //   element.append(linkfn(scope))
-      // },
+      transclude: true,
+      template: '<div><div ng-transclude=""></div><label ng-show="busy" class="text-info glyphicon glyphicon-refresh spin"></label></div>',
       controller: ['$scope', function ($scope) {
         this.show = function () { $scope.busy = true }
         this.hide = function () { $scope.busy = false }
