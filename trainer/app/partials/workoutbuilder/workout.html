@@ -16,7 +16,7 @@
         </div>
         <div id="exercise-description" class="col-sm-1">{{selected.exercise.details.description}}</div>
         <div id="workout-data" class="col-sm-3">
-            <div class="form-group row" ng-class="{'has-error':formWorkout.workoutName.$invalid}">
+            <div class="form-group row" ng-class="{'has-error':formWorkout.workoutName.$invalid}" busy-indicator="">
                 <label for="workout-name">Name:</label>
                 <input type="text" name="workoutName" class="form-control" id="workout-name" placeholder="Enter workout name. Must be unique." ng-model="workout.name" ng-model-options="{ updateOn: 'blur' }" ng-pattern="/^[A-Za-z0-9]{1,15}$/" required remote-validator="uniqueName" remote-validator-function="uniqueUserName(value)" >
                 <label ng-show="hasError(formWorkout.workoutName,formWorkout.workoutName.$error.required)" class="text-danger">Workout name is required and it should be unique.</label>

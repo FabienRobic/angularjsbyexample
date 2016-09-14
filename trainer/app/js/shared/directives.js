@@ -19,17 +19,23 @@ angular.module('app').directive('ngConfirm', [function () {
 //   .directive('remoteValidator', ['$parse', function ($parse) {
 //     return {
 //       priority: 5,
-//       require: 'ngModel',
-//       link: function (scope, elm, attr, ngModelCtrl) {
+//       require: ['ngModel', '?^busyIndicator'],
+//       link: function (scope, elm, attr, ctrls) {
 //         var expfn = $parse(attr['remoteValidatorFunction'])
 //         var validatorName = attr['remoteValidator']
+//         var ngModelCtrl = ctrls[0]
+//         var busyIndicator = ctrls[1]
 //         ngModelCtrl.$parsers.push(function (value) {
 //           var result = expfn(scope, {'value': value})
 //           if (result.then) {
+//             if (busyIndicator) { busyIndicator.show() }
 //             result.then(function (data) {
+//               if (busyIndicator) { busyIndicator.hide() }
 //               ngModelCtrl.$setValidity(validatorName, true)
 //             }, function (error) {
-//               ngModelCtrl.$setValidity(validatorName, false) })
+//               if (busyIndicator) { busyIndicator.hide() }
+//               ngModelCtrl.$setValidity(validatorName, false)
+//             })
 //           }
 //           return value
 //         })
@@ -59,13 +65,40 @@ angular.module('app').directive('ngConfirm', [function () {
 angular.module('app')
   .directive('remoteValidator', ['$parse', function ($parse) {
     return {
-      require: 'ngModel',
-      link: function (scope, elm, attr, ngModelCtrl) {
+      require: ['ngModel', '^?busyIndicator'],
+      link: function (scope, elm, attr, ctrls) {
         var expfn = $parse(attr['remoteValidatorFunction'])
         var validatorName = attr['remoteValidator']
+        var ngModelCtrl = ctrls[0]
+        var busyIndicator = ctrls[1]
         ngModelCtrl.$asyncValidators[validatorName] = function (value) {
           return expfn(scope, {'value': value})
         }
+        if (busyIndicator) {
+          scope.$watch(function () { return ngModelCtrl.$pending},
+            function (newValue) {
+              if (newValue && newValue[validatorName]) {
+                busyIndicator.show()
+              } else {
+                busyIndicator.hide()
+              }
+            })
+        }
       }
+    }
+  }])
+
+angular.module('app')
+  .directive('busyIndicator', ['$compile', function ($compile) {
+    return {
+      scope: true,
+      link: function (scope, element, attr) {
+        var linkfn = $compile('<div><label ng-show="busy" class="text-info glyphicon glyphicon-refresh spin"></label></div>')
+        element.append(linkfn(scope))
+      },
+      controller: ['$scope', function ($scope) {
+        this.show = function () { $scope.busy = true }
+        this.hide = function () { $scope.busy = false }
+      }]
     }
   }])
